@@ -1,8 +1,28 @@
+// cloak.js
 let appInd;
-const g = window.location.pathname === "/gm";
-const a = window.location.pathname === "/as";
-const c = window.location.pathname === "/ts";
-const t = window.top.location.pathname === "/ta";
+const g = window.location.pathname === "/a";
+const a = window.location.pathname === "/b";
+const c = window.location.pathname === "/gt";
+
+let t;
+
+try {
+  t = window.top.location.pathname === "/d";
+} catch {
+  try {
+    t = window.parent.location.pathname === "/d";
+  } catch {
+    t = false;
+  }
+}
+
+function Span(name) {
+  return name.split("").map(char => {
+    const span = document.createElement("span");
+    span.textContent = char;
+    return span;
+  });
+}
 
 function saveToLocal(path) {
   sessionStorage.setItem("GoUrl", path);
@@ -23,7 +43,7 @@ function handleClick(app) {
 
   if (app.local) {
     saveToLocal(Selected);
-    window.location.href = "ta";
+    window.location.href = "rx";
     if (t) {
       window.location.href = Selected;
     }
@@ -51,19 +71,11 @@ function handleClick(app) {
 }
 
 function getSelected(links) {
-  const options = links
-    .map((link, index) => `${index + 1}: ${link.name}`)
-    .join("\n");
-  const choice = prompt(
-    `Select a link by entering the corresponding number:\n${options}`,
-  );
+  const options = links.map((link, index) => `${index + 1}: ${link.name}`).join("\n");
+  const choice = prompt(`Select a link by entering the corresponding number:\n${options}`);
   const selectedIndex = Number.parseInt(choice, 10) - 1;
 
-  if (
-    Number.isNaN(selectedIndex) ||
-    selectedIndex < 0 ||
-    selectedIndex >= links.length
-  ) {
+  if (Number.isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= links.length) {
     alert("Invalid selection. Please try again.");
     return null;
   }
@@ -195,14 +207,17 @@ function CreateCustomApp(customApp) {
   image.loading = "lazy";
 
   const paragraph = document.createElement("p");
-  paragraph.textContent = customApp.name;
+
+  for (const span of Span(customApp.name)) {
+    paragraph.appendChild(span);
+  }
 
   linkElem.appendChild(image);
   linkElem.appendChild(paragraph);
   columnDiv.appendChild(linkElem);
   columnDiv.appendChild(btn);
 
-  const nonPinnedApps = document.querySelector(".container-apps");
+  const nonPinnedApps = document.querySelector(".apps");
   nonPinnedApps.insertBefore(columnDiv, nonPinnedApps.firstChild);
 }
 
@@ -244,8 +259,8 @@ fetch(path)
       }
       return a.name.localeCompare(b.name);
     });
-    const nonPinnedApps = document.querySelector(".container-apps");
-    const pinnedApps = document.querySelector(".pinned-apps");
+    const nonPinnedApps = document.querySelector(".apps");
+    const pinnedApps = document.querySelector(".pinned");
     let pinList;
     if (g) {
       pinList = localStorage.getItem("Gpinned") || "";
@@ -260,10 +275,7 @@ fetch(path)
     for (const app of appsList) {
       if (app.categories?.includes("local")) {
         app.local = true;
-      } else if (
-        app.link &&
-        (app.link.includes("now.gg") || app.link.includes("nowgg.me"))
-      ) {
+      } else if (app.link && (app.link.includes("now.gg") || app.link.includes("nowgg.me"))) {
         if (app.partial === null || app.partial === undefined) {
           app.partial = true;
           app.say = "Now.gg is currently not working for some users.";
@@ -317,7 +329,10 @@ fetch(path)
       }
 
       const paragraph = document.createElement("p");
-      paragraph.textContent = app.name;
+
+      for (const span of Span(app.name)) {
+        paragraph.appendChild(span);
+      }
 
       if (app.error) {
         paragraph.style.color = "red";
@@ -332,8 +347,7 @@ fetch(path)
       } else if (app.partial) {
         paragraph.style.color = "yellow";
         if (!app.say) {
-          app.say =
-            "This app is currently experiencing some issues, it may not work for you. (Dynamic doesn't work in about:blank)";
+          app.say = "This app is currently experiencing some issues, it may not work for you. (Dynamic doesn't work in about:blank)";
         }
       }
 
@@ -365,19 +379,14 @@ fetch(path)
     console.error("Error fetching JSON data:", error);
   });
 
-function showCategory() {
-  const selectedCategories = Array.from(
-    document.querySelectorAll("#category option:checked"),
-  ).map(option => option.value);
-  const games = document.getElementsByClassName("column");
+function category() {
+  const selectedCategories = Array.from(document.querySelectorAll("#category option:checked")).map(option => option.value);
+  const g = document.getElementsByClassName("column");
 
-  for (const game of games) {
+  for (const game of g) {
     const categories = game.getAttribute("data-category").split(" ");
 
-    if (
-      selectedCategories.length === 0 ||
-      selectedCategories.some(category => categories.includes(category))
-    ) {
+    if (selectedCategories.length === 0 || selectedCategories.some(category => categories.includes(category))) {
       game.style.display = "block";
     } else {
       game.style.display = "none";
@@ -385,12 +394,12 @@ function showCategory() {
   }
 }
 
-function searchBar() {
-  const input = document.getElementById("searchbarbottom");
+function bar() {
+  const input = document.getElementById("search");
   const filter = input.value.toLowerCase();
-  const games = document.getElementsByClassName("column");
+  const g = document.getElementsByClassName("column");
 
-  for (const game of games) {
+  for (const game of g) {
     const name = game.getElementsByTagName("p")[0].textContent.toLowerCase();
 
     if (name.includes(filter)) {
